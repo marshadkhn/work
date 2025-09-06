@@ -33,7 +33,16 @@ const ProjectSchema = new mongoose.Schema(
       required: true,
     },
     totalAmount: { type: Number, required: true },
-    deadline: { type: Date },
+
+    // --- YEH FIELDS UPDATE/ADD KI GAYI HAIN ---
+    startDate: { type: Date },
+    endDate: { type: Date }, // 'deadline' ko 'endDate' kar diya hai
+    priority: {
+      type: String,
+      enum: ["High", "Medium", "Easy"],
+      default: "Medium",
+    },
+
     payments: [PaymentSchema],
     status: {
       type: String,
@@ -42,7 +51,7 @@ const ProjectSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // <-- YEH LINE ADD KAREIN
+    timestamps: true,
   }
 );
 

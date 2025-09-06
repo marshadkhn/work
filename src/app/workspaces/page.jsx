@@ -11,10 +11,10 @@ import {
   Globe,
   Trash2,
   AlertTriangle,
+  Flag,
 } from "lucide-react";
 import { countries } from "@/lib/countries";
 
-// Modal Component
 const Modal = ({ isOpen, onClose, children, title }) => {
   if (!isOpen) return null;
   return (
@@ -33,17 +33,22 @@ const Modal = ({ isOpen, onClose, children, title }) => {
   );
 };
 
-// Project Card Component
 const ProjectCard = ({ project, currencySymbol = "$", onDelete }) => {
   const amountPaid = project.payments.reduce((acc, p) => acc + p.amount, 0);
   const amountDue = project.totalAmount - amountPaid;
   const progress =
     project.totalAmount > 0 ? (amountPaid / project.totalAmount) * 100 : 0;
 
+  const priorityColors = {
+    High: "bg-red-500/30 text-red-300 border-red-500/50",
+    Medium: "bg-amber-500/30 text-amber-300 border-amber-500/50",
+    Easy: "bg-green-500/30 text-green-300 border-green-500/50",
+  };
+
   return (
     <div className="bg-slate-700/50 p-4 rounded-lg border border-slate-600 hover:border-blue-500 transition-all duration-300 group relative">
       <button
-        onClick={() => onDelete(project._id, "project")}
+        onClick={() => onDelete(project._id, "project", project.name)}
         className="absolute top-2 right-2 p-1 bg-red-600/50 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-opacity"
       >
         <Trash2 className="h-4 w-4" />
@@ -51,9 +56,18 @@ const ProjectCard = ({ project, currencySymbol = "$", onDelete }) => {
       <div className="flex justify-between items-start">
         <div>
           <h4 className="font-semibold text-slate-100">{project.name}</h4>
-          <span className="text-xs bg-blue-500/30 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/50">
-            {project.category}
-          </span>
+          <div className="flex gap-2 mt-1 flex-wrap">
+            <span className="text-xs bg-blue-500/30 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/50">
+              {project.category}
+            </span>
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full border ${
+                priorityColors[project.priority]
+              }`}
+            >
+              {project.priority}
+            </span>
+          </div>
         </div>
         <div className="text-lg font-bold text-slate-100">
           {currencySymbol}
@@ -82,7 +96,6 @@ const ProjectCard = ({ project, currencySymbol = "$", onDelete }) => {
   );
 };
 
-// Form initial states
 const initialWorkspaceState = {
   name: "",
   type: "Agency",
@@ -93,7 +106,9 @@ const initialProjectState = {
   name: "",
   category: "Full Stack",
   totalAmount: "",
-  deadline: "",
+  startDate: "",
+  endDate: "",
+  priority: "Medium",
 };
 
 export default function WorkspacesPage() {
@@ -110,9 +125,10 @@ export default function WorkspacesPage() {
   const fetchData = async () => {
     try {
       const res = await axios.get("/api/workspaces");
-      setWorkspaces(res.data.data);
+      setWorkspaces(res.data.data || []);
     } catch (error) {
       console.error("Failed to fetch workspaces", error);
+      setWorkspaces([]);
     }
     setIsLoading(false);
   };
@@ -149,6 +165,7 @@ export default function WorkspacesPage() {
 
   const openProjectModal = (workspace) => {
     setCurrentWorkspace(workspace);
+    setNewProject(initialProjectState);
     setIsProjectModalOpen(true);
   };
 
@@ -222,8 +239,8 @@ export default function WorkspacesPage() {
               key={workspace._id}
               className="bg-slate-800 p-6 rounded-xl border border-slate-700"
             >
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-3">
+              <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+                <div className="flex items-center gap-3 flex-wrap">
                   <Briefcase className="h-6 w-6 text-slate-400" />
                   <h2 className="text-2xl font-bold text-slate-100">
                     {workspace.name}
@@ -264,9 +281,7 @@ export default function WorkspacesPage() {
                       key={project._id}
                       project={project}
                       currencySymbol={currencySymbol}
-                      onDelete={(projectId) =>
-                        openDeleteModal(projectId, "project", project.name)
-                      }
+                      onDelete={openDeleteModal}
                     />
                   ))}
                 </div>
@@ -280,7 +295,6 @@ export default function WorkspacesPage() {
             </div>
           );
         })}
-
         {workspaces.length === 0 && !isLoading && (
           <div className="text-center py-16 border-2 border-dashed border-slate-700 rounded-lg">
             <Briefcase className="h-12 w-12 mx-auto text-slate-600 mb-4" />
@@ -384,26 +398,54 @@ export default function WorkspacesPage() {
             <option>Other</option>
           </InputField>
           <InputField
-            Icon={DollarSign}
             name="totalAmount"
             type="number"
-            placeholder={`Total Amount in ${currentWorkspace?.currency}`}
+            placeholder={`Total Amount in ${
+              currentWorkspace?.currency || "..."
+            }`}
             value={newProject.totalAmount}
             onChange={(e) =>
               setNewProject({ ...newProject, totalAmount: e.target.value })
             }
+            currencySymbol={
+              countries.find((c) => c.currency === currentWorkspace?.currency)
+                ?.symbol
+            }
             required
           />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InputField
+              Icon={Calendar}
+              name="Start Date"
+              type="date"
+              value={newProject.startDate}
+              onChange={(e) =>
+                setNewProject({ ...newProject, startDate: e.target.value })
+              }
+            />
+            <InputField
+              Icon={Calendar}
+              name="End Date"
+              type="date"
+              value={newProject.endDate}
+              onChange={(e) =>
+                setNewProject({ ...newProject, endDate: e.target.value })
+              }
+            />
+          </div>
           <InputField
-            Icon={Calendar}
-            name="deadline"
-            type="date"
-            value={newProject.deadline}
+            Icon={Flag}
+            name="priority"
+            as="select"
+            value={newProject.priority}
             onChange={(e) =>
-              setNewProject({ ...newProject, deadline: e.target.value })
+              setNewProject({ ...newProject, priority: e.target.value })
             }
-          />
-
+          >
+            <option>High</option>
+            <option>Medium</option>
+            <option>Easy</option>
+          </InputField>
           <div className="flex justify-end pt-4 gap-3">
             <button
               type="button"
@@ -467,16 +509,30 @@ export default function WorkspacesPage() {
   );
 }
 
-const InputField = ({ Icon, name, as = "input", children, ...props }) => {
+const InputField = ({
+  Icon,
+  name,
+  as = "input",
+  children,
+  currencySymbol,
+  ...props
+}) => {
   const Component = as;
   const isSelect = as === "select";
+  const DisplayIcon =
+    name === "totalAmount"
+      ? () => <span className="text-slate-400">{currencySymbol || "$"}</span>
+      : Icon;
+
   return (
     <div>
       <label className="block text-sm font-medium text-slate-300 mb-1 capitalize">
         {name.replace(/([A-Z])/g, " $1")}
       </label>
       <div className="relative">
-        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center pointer-events-none text-slate-400">
+          <DisplayIcon />
+        </div>
         <Component
           name={name}
           {...props}

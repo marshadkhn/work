@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 import NextAuthProvider from "@/components/SessionProvider"; // Import the provider
 
 export const metadata = {
-  title: "Freelancer crm",
+  title: "Arshad Management",
   description: "A personal CRM for freelancers",
 };
 

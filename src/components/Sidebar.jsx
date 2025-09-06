@@ -28,9 +28,9 @@ const Sidebar = () => {
     <div className="w-64 bg-slate-800 border-r border-slate-700 min-h-screen flex flex-col justify-between">
       <div>
         <div className="p-4 flex items-center justify-center border-b border-slate-700">
-          <Briefcase className="h-8 w-8 text-blue-500" />
+          {/* <Briefcase className="h-8 w-8 text-blue-500" /> */}
           <h1 className="text-xl font-bold text-slate-100 ml-2">
-            Freelancer CRM
+            My Management
           </h1>
         </div>
         <nav className="mt-4 px-3">
