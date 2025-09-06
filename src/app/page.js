@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// Stat Card Component
+// A robust, reusable Stat Card Component
 const StatCard = ({ title, value, icon, color }) => {
   const colors = {
     blue: "bg-blue-600",
@@ -39,31 +39,40 @@ export default function DashboardPage() {
   const [recentProjects, setRecentProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // A fallback username if the session email is not available
+  const userName = session?.user?.email?.split("@")[0] || "Freelancer";
+
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
+      // No need to set isLoading here, it's set initially
       try {
-        // Fetch stats and recent projects in parallel
+        // Fetch stats and recent projects in parallel for efficiency
         const [statsRes, projectsRes] = await Promise.all([
           axios.get("/api/stats"),
-          axios.get("/api/workspaces"), // We get projects nested in workspaces
+          axios.get("/api/workspaces"), // Assumes projects are nested in workspaces
         ]);
 
-        setStats(statsRes.data.data);
+        if (statsRes.data?.data) {
+          setStats(statsRes.data.data);
+        }
 
-        // Extract all projects from all workspaces and sort them by creation date
-        const allProjects = projectsRes.data.data.flatMap((ws) => ws.projects);
+        // Extract, sort, and slice projects safely
+        const allProjects =
+          projectsRes.data?.data?.flatMap((ws) => ws.projects) || [];
         const sortedProjects = allProjects.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
-        setRecentProjects(sortedProjects.slice(0, 5)); // Get latest 5
+        setRecentProjects(sortedProjects.slice(0, 5)); // Get the 5 most recent
       } catch (error) {
-        console.error("Failed to fetch dashboard data", error);
+        console.error("Failed to fetch dashboard data:", error);
+        // Optionally, set an error state here to show a message to the user
+      } finally {
+        // This ensures the loader is always turned off, even if an error occurs
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     fetchData();
-  }, []);
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   if (isLoading) {
     return (
@@ -77,10 +86,10 @@ export default function DashboardPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-100">
-          Welcome back, {session?.user?.email.split("@")[0]}!
+          Welcome back, {userName}!
         </h1>
         <p className="text-slate-400 mt-1">
-          Here's a summary of your freelance business.
+          Here&apos;s a summary of your freelance business.
         </p>
       </div>
 
@@ -88,19 +97,19 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatCard
           title="Total Revenue (All Time)"
-          value={`$${stats.totalRevenue.toLocaleString()}`}
+          value={`$${(stats.totalRevenue || 0).toLocaleString()}`}
           icon={<DollarSign className="h-6 w-6 text-white" />}
           color="green"
         />
         <StatCard
           title="Pending Amount"
-          value={`$${stats.pendingAmount.toLocaleString()}`}
+          value={`$${(stats.pendingAmount || 0).toLocaleString()}`}
           icon={<TrendingUp className="h-6 w-6 text-white" />}
           color="amber"
         />
         <StatCard
           title="Ongoing Projects"
-          value={stats.ongoingProjects}
+          value={stats.ongoingProjects || 0}
           icon={<Briefcase className="h-6 w-6 text-white" />}
           color="blue"
         />
