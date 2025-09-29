@@ -1,12 +1,13 @@
 export { default } from "next-auth/middleware";
 
 export const config = {
-  // Protect all routes except the login page
-  matcher: [
-    "/",
-    "/workspaces", // Yeh add karna zaroori tha
-    "/workspaces/:path*",
-    "/expenses", // Yeh bhi add karna zaroori tha
-    "/expenses/:path*",
-  ],
+  /*
+   * Match all request paths except for the ones starting with:
+   * - api (API routes)
+   * - _next/static (static files)
+   * - _next/image (image optimization files)
+   * - favicon.ico (favicon file)
+   * - login (the login page itself)
+   */
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|login).*)"],
 };
