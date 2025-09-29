@@ -97,11 +97,10 @@ export default function ExpensesPage() {
     setIsLoading(true);
     try {
       const res = await axios.get("/api/expenses");
-      // YEH HAI FIX: Agar API se data nahi aata, toh ek khaali array set karo
       setExpenses(res.data.data || []);
     } catch (error) {
       console.error("Failed to fetch expenses", error);
-      setExpenses([]); // Error aane par bhi khaali array set karo
+      setExpenses([]);
     }
     setIsLoading(false);
   };
@@ -146,11 +145,20 @@ export default function ExpensesPage() {
 
   const filteredExpenses = useMemo(() => {
     const now = new Date();
-    if (!expenses) return []; // Ek aur safety check
+    if (!expenses) return [];
     return expenses.filter((expense) => {
       const expenseDate = new Date(expense.date);
       if (view === "Daily")
         return expenseDate.toDateString() === now.toDateString();
+      if (view === "Weekly") {
+        const firstDayOfWeek = new Date(
+          now.setDate(now.getDate() - now.getDay())
+        );
+        const lastDayOfWeek = new Date(
+          now.setDate(now.getDate() - now.getDay() + 6)
+        );
+        return expenseDate >= firstDayOfWeek && expenseDate <= lastDayOfWeek;
+      }
       if (view === "Monthly")
         return (
           expenseDate.getMonth() === now.getMonth() &&
@@ -184,7 +192,7 @@ export default function ExpensesPage() {
           <div>
             <p className="text-slate-400">{view} Expenses</p>
             <p className="text-3xl font-bold text-red-400">
-              ${totalExpense.toLocaleString()}
+              ₹{totalExpense.toLocaleString()}
             </p>
           </div>
           <div className="flex bg-slate-700 rounded-lg p-1">
@@ -195,6 +203,14 @@ export default function ExpensesPage() {
               }`}
             >
               Daily
+            </button>
+            <button
+              onClick={() => setView("Weekly")}
+              className={`px-3 py-1 text-sm rounded-md ${
+                view === "Weekly" ? "bg-blue-600 text-white" : "text-slate-300"
+              }`}
+            >
+              Weekly
             </button>
             <button
               onClick={() => setView("Monthly")}
@@ -246,7 +262,7 @@ export default function ExpensesPage() {
                   </div>
                   <div className="flex items-center gap-4">
                     <p className="font-semibold text-red-400">
-                      ${expense.amount.toLocaleString()}
+                      ₹{expense.amount.toLocaleString()}
                     </p>
                     <button
                       onClick={() =>

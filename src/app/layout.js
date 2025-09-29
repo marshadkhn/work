@@ -1,6 +1,13 @@
+import { Inter } from "next/font/google"; // Font import karein
 import "./globals.css";
 import Layout from "@/components/Layout";
-import NextAuthProvider from "@/components/SessionProvider"; // Import the provider
+import NextAuthProvider from "@/components/SessionProvider";
+
+// Font ko configure karein
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans", // CSS variable ka naam dein
+});
 
 export const metadata = {
   title: "Arshad Management",
@@ -9,11 +16,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    // class mein font variable add karein
+    <html lang="en" className={`${inter.variable}`}>
       <body>
         <NextAuthProvider>
-          {" "}
-          {/* Wrap with the provider */}
           <Layout>{children}</Layout>
         </NextAuthProvider>
       </body>

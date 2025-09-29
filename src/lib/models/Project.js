@@ -1,15 +1,20 @@
 import mongoose from "mongoose";
 
+// --- YEH NAYA PAYMENT SCHEMA ADD KAREIN ---
 const PaymentSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   date: { type: Date, default: Date.now },
   method: {
     type: String,
-    enum: ["GPay", "Bank Transfer", "Other"],
+    enum: ["Bank Transfer", "UPI", "Cash", "Other"],
     required: true,
   },
-  transactionId: { type: String },
-  type: { type: String, enum: ["Advance", "Milestone"], required: true },
+  note: { type: String, trim: true },
+  type: {
+    type: String,
+    enum: ["Advance", "Milestone", "Final"],
+    required: true,
+  },
 });
 
 const ProjectSchema = new mongoose.Schema(
@@ -33,16 +38,14 @@ const ProjectSchema = new mongoose.Schema(
       required: true,
     },
     totalAmount: { type: Number, required: true },
-
-    // --- YEH FIELDS UPDATE/ADD KI GAYI HAIN ---
     startDate: { type: Date },
-    endDate: { type: Date }, // 'deadline' ko 'endDate' kar diya hai
+    endDate: { type: Date },
     priority: {
       type: String,
       enum: ["High", "Medium", "Easy"],
       default: "Medium",
     },
-
+    // --- YAHAN PAYMENTS ARRAY ADD HUA HAI ---
     payments: [PaymentSchema],
     status: {
       type: String,

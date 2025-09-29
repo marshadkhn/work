@@ -1,25 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  /* Default to dark theme variables */
-  --background: #0f172a; /* slate-900 */
-  --foreground: #f1f5f9; /* slate-100 */
+  --background: #09090b; /* zinc-950 */
+  --foreground: #f4f4f5; /* zinc-100 */
+  
+  --card: #18181b; /* zinc-900 */
+  --card-foreground: #f4f4f5; /* zinc-100 */
+
+  --popover: #18181b; /* zinc-900 */
+  --popover-foreground: #f4f4f5;
+
+  --primary: #60a5fa; /* blue-400 */
+  --primary-foreground: #09090b;
+
+  --secondary: #3f3f46; /* zinc-700 */
+  --secondary-foreground: #f4f4f5;
+
+  --muted: #3f3f46; /* zinc-700 */
+  --muted-foreground: #a1a1aa; /* zinc-400 */
+
+  --accent: #3f3f46;
+  --accent-foreground: #f4f4f5;
+
+  --border: #27272a; /* zinc-800 */
+  --input: #27272a;
+
+  --ring: #60a5fa; /* blue-400 */
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans); /* Geist font ko naye variable se replace karein */
 }
-
-/* We will not use light theme for now */
-/* @media (prefers-color-scheme: dark) { ... } can be removed or commented out */
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), sans-serif;
+  font-family: var(--font-sans), sans-serif; /* Font family yahan apply ho jayegi */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
