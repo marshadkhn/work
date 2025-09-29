@@ -8,13 +8,11 @@ import {
   Calendar,
   Tag,
   Trash2,
-  Edit,
   AlertTriangle,
   DollarSign,
   Info,
 } from "lucide-react";
 
-// Reusable Modal Component
 const Modal = ({ isOpen, onClose, children, title }) => {
   if (!isOpen) return null;
   return (
@@ -23,31 +21,30 @@ const Modal = ({ isOpen, onClose, children, title }) => {
       onClick={onClose}
     >
       <div
-        className="bg-slate-800 p-6 rounded-xl shadow-2xl w-full max-w-lg border border-slate-700"
+        className="bg-zinc-900 p-6 rounded-xl shadow-2xl w-full max-w-lg border border-zinc-800"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-2xl font-bold mb-6 text-slate-100">{title}</h2>
+        <h2 className="text-2xl font-bold mb-6 text-zinc-100">{title}</h2>
         {children}
       </div>
     </div>
   );
 };
 
-// Reusable InputField Component
 const InputField = ({ Icon, name, as = "input", children, ...props }) => {
   const Component = as;
   const isSelect = as === "select";
   return (
     <div>
-      <label className="block text-sm font-medium text-slate-300 mb-1 capitalize">
+      <label className="block text-sm font-medium text-zinc-300 mb-1 capitalize">
         {name.replace(/([A-Z])/g, " $1")}
       </label>
       <div className="relative">
-        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
+        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400 pointer-events-none" />
         <Component
           name={name}
           {...props}
-          className={`w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          className={`w-full pl-10 pr-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             isSelect ? "appearance-none pr-10" : ""
           }`}
         >
@@ -56,7 +53,7 @@ const InputField = ({ Icon, name, as = "input", children, ...props }) => {
         {isSelect && (
           <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
             <svg
-              className="w-5 h-5 text-slate-400"
+              className="w-5 h-5 text-zinc-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -145,27 +142,34 @@ export default function ExpensesPage() {
 
   const filteredExpenses = useMemo(() => {
     const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    // Logic for first day of the week (Sunday)
+    const firstDayOfWeek = new Date(now);
+    firstDayOfWeek.setDate(now.getDate() - now.getDay());
+    firstDayOfWeek.setHours(0, 0, 0, 0);
+
+    // Logic for last day of the week (Saturday)
+    const lastDayOfWeek = new Date(firstDayOfWeek);
+    lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+    lastDayOfWeek.setHours(23, 59, 59, 999);
+
     if (!expenses) return [];
+
     return expenses.filter((expense) => {
       const expenseDate = new Date(expense.date);
       if (view === "Daily")
         return expenseDate.toDateString() === now.toDateString();
       if (view === "Weekly") {
-        const firstDayOfWeek = new Date(
-          now.setDate(now.getDate() - now.getDay())
-        );
-        const lastDayOfWeek = new Date(
-          now.setDate(now.getDate() - now.getDay() + 6)
-        );
         return expenseDate >= firstDayOfWeek && expenseDate <= lastDayOfWeek;
       }
       if (view === "Monthly")
         return (
-          expenseDate.getMonth() === now.getMonth() &&
-          expenseDate.getFullYear() === now.getFullYear()
+          expenseDate.getMonth() === currentMonth &&
+          expenseDate.getFullYear() === currentYear
         );
-      if (view === "Yearly")
-        return expenseDate.getFullYear() === now.getFullYear();
+      if (view === "Yearly") return expenseDate.getFullYear() === currentYear;
       return true;
     });
   }, [expenses, view]);
@@ -176,54 +180,62 @@ export default function ExpensesPage() {
   );
 
   return (
-    <div className="text-slate-100">
+    <div className="text-zinc-100">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Expense Tracker</h1>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors shadow-md"
         >
           <Plus className="h-5 w-5 mr-2" /> New Expense
         </button>
       </div>
 
-      <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
+      <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <p className="text-slate-400">{view} Expenses</p>
+            <p className="text-zinc-400">{view} Expenses</p>
             <p className="text-3xl font-bold text-red-400">
               ₹{totalExpense.toLocaleString()}
             </p>
           </div>
-          <div className="flex bg-slate-700 rounded-lg p-1">
+          <div className="flex bg-zinc-800 rounded-lg p-1">
             <button
               onClick={() => setView("Daily")}
-              className={`px-3 py-1 text-sm rounded-md ${
-                view === "Daily" ? "bg-blue-600 text-white" : "text-slate-300"
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                view === "Daily"
+                  ? "bg-blue-600 text-white font-semibold"
+                  : "text-zinc-300 hover:bg-zinc-700"
               }`}
             >
               Daily
             </button>
             <button
               onClick={() => setView("Weekly")}
-              className={`px-3 py-1 text-sm rounded-md ${
-                view === "Weekly" ? "bg-blue-600 text-white" : "text-slate-300"
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                view === "Weekly"
+                  ? "bg-blue-600 text-white font-semibold"
+                  : "text-zinc-300 hover:bg-zinc-700"
               }`}
             >
               Weekly
             </button>
             <button
               onClick={() => setView("Monthly")}
-              className={`px-3 py-1 text-sm rounded-md ${
-                view === "Monthly" ? "bg-blue-600 text-white" : "text-slate-300"
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                view === "Monthly"
+                  ? "bg-blue-600 text-white font-semibold"
+                  : "text-zinc-300 hover:bg-zinc-700"
               }`}
             >
               Monthly
             </button>
             <button
               onClick={() => setView("Yearly")}
-              className={`px-3 py-1 text-sm rounded-md ${
-                view === "Yearly" ? "bg-blue-600 text-white" : "text-slate-300"
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                view === "Yearly"
+                  ? "bg-blue-600 text-white font-semibold"
+                  : "text-zinc-300 hover:bg-zinc-700"
               }`}
             >
               Yearly
@@ -233,10 +245,10 @@ export default function ExpensesPage() {
 
         {isLoading ? (
           <div className="text-center py-8">
-            <LoaderCircle className="h-8 w-8 animate-spin mx-auto" />
+            <LoaderCircle className="h-8 w-8 animate-spin mx-auto text-blue-500" />
           </div>
         ) : (
-          <div className="divide-y divide-slate-700">
+          <div className="divide-y divide-zinc-800">
             {filteredExpenses.length > 0 ? (
               filteredExpenses.map((expense) => (
                 <div
@@ -244,14 +256,14 @@ export default function ExpensesPage() {
                   className="flex items-center justify-between py-3"
                 >
                   <div className="flex items-center">
-                    <div className="p-2 bg-slate-700 rounded-lg mr-4">
+                    <div className="p-2 bg-zinc-800 rounded-lg mr-4">
                       <Wallet className="h-5 w-5 text-blue-400" />
                     </div>
                     <div>
-                      <p className="font-semibold text-slate-100">
+                      <p className="font-semibold text-zinc-100">
                         {expense.description}
                       </p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-zinc-400">
                         {expense.category === "Other"
                           ? expense.otherCategoryDescription
                           : expense.category}
@@ -268,7 +280,7 @@ export default function ExpensesPage() {
                       onClick={() =>
                         openDeleteModal(expense._id, expense.description)
                       }
-                      className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-700 rounded-md"
+                      className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-zinc-700 rounded-md transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -276,7 +288,7 @@ export default function ExpensesPage() {
                 </div>
               ))
             ) : (
-              <p className="text-slate-500 text-center py-8">
+              <p className="text-zinc-500 text-center py-8">
                 No expenses found for this period.
               </p>
             )}
@@ -356,13 +368,13 @@ export default function ExpensesPage() {
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 text-slate-300 rounded-lg hover:bg-slate-700"
+              className="px-4 py-2 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors font-semibold"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors font-semibold"
             >
               Add Expense
             </button>
@@ -370,7 +382,6 @@ export default function ExpensesPage() {
         </form>
       </Modal>
 
-      {/* DELETE CONFIRMATION MODAL */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -378,27 +389,27 @@ export default function ExpensesPage() {
       >
         <div className="text-center">
           <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <p className="text-lg text-slate-300">
+          <p className="text-lg text-zinc-300">
             Are you sure you want to delete this expense:{" "}
-            <strong className="font-bold text-slate-100">
+            <strong className="font-bold text-zinc-100">
               "{itemToDelete?.description}"
             </strong>
             ?
           </p>
-          <p className="text-sm text-slate-400 mt-2">
+          <p className="text-sm text-zinc-400 mt-2">
             This action cannot be undone.
           </p>
         </div>
         <div className="flex justify-center mt-8 gap-4">
           <button
             onClick={() => setIsDeleteModalOpen(false)}
-            className="px-6 py-2 text-slate-300 rounded-lg hover:bg-slate-700"
+            className="px-6 py-2 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors font-semibold"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirmDelete}
-            className="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700"
+            className="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-500 transition-colors"
           >
             Delete
           </button>

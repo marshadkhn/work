@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Arshad Management",
+  title: "Arshad's Desk",
   description: "A personal CRM for freelancers",
 };
 

@@ -39,7 +39,7 @@ const Sidebar = () => {
       <div className="px-3 py-4 border-t border-zinc-800">
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="w-full flex items-center justify-center bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200"
+          className="w-full flex items-center justify-center bg-zinc-700/50 text-red-400 font-semibold px-4 py-2 rounded-lg hover:bg-zinc-700 hover:text-red-300 transition-colors duration-200"
         >
           <LogOut className="h-5 w-5 mr-2" />
           Logout

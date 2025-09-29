@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+// YEH IMPORT LINE BAHUT ZAROORI HAI
 import {
   Plus,
   Briefcase,
@@ -327,7 +328,7 @@ export default function WorkspacesPage() {
         <h1 className="text-3xl font-bold">Workspaces</h1>
         <button
           onClick={() => setIsWorkspaceModalOpen(true)}
-          className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors shadow-md"
         >
           <Plus className="h-5 w-5 mr-2" /> New Workspace
         </button>
@@ -360,7 +361,7 @@ export default function WorkspacesPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => openProjectModal(workspace)}
-                    className="flex items-center bg-green-600 text-white px-3 py-1 rounded-md text-sm hover:bg-green-700"
+                    className="flex items-center bg-green-600 text-white px-3 py-1 rounded-md text-sm hover:bg-green-500 font-semibold transition-colors"
                   >
                     <Plus className="h-4 w-4 mr-1" /> Add Project
                   </button>
@@ -372,7 +373,7 @@ export default function WorkspacesPage() {
                         workspace.name
                       )
                     }
-                    className="p-1.5 bg-red-600/80 text-white rounded-md hover:bg-red-600"
+                    className="p-1.5 bg-red-600/80 text-white rounded-md hover:bg-red-500 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -457,13 +458,13 @@ export default function WorkspacesPage() {
             <button
               type="button"
               onClick={() => setIsWorkspaceModalOpen(false)}
-              className="px-4 py-2 text-zinc-300 rounded-lg hover:bg-zinc-700"
+              className="px-4 py-2 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors font-semibold"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors font-semibold"
             >
               Create
             </button>
@@ -556,13 +557,13 @@ export default function WorkspacesPage() {
             <button
               type="button"
               onClick={() => setIsProjectModalOpen(false)}
-              className="px-4 py-2 text-zinc-300 rounded-lg hover:bg-zinc-700"
+              className="px-4 py-2 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors font-semibold"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors font-semibold"
             >
               Add Project
             </button>
@@ -599,13 +600,13 @@ export default function WorkspacesPage() {
         <div className="flex justify-center mt-8 gap-4">
           <button
             onClick={() => setIsDeleteModalOpen(false)}
-            className="px-6 py-2 text-zinc-300 rounded-lg hover:bg-zinc-700"
+            className="px-6 py-2 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors font-semibold"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirmDelete}
-            className="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700"
+            className="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-500 transition-colors"
           >
             Delete
           </button>
@@ -712,7 +713,7 @@ export default function WorkspacesPage() {
             <div className="flex justify-end pt-2">
               <button
                 type="submit"
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 font-semibold transition-colors"
               >
                 Add Payment
               </button>
