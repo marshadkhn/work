@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-// YEH IMPORT LINE BAHUT ZAROORI HAI
 import {
   Plus,
   Briefcase,
@@ -13,6 +12,7 @@ import {
   AlertTriangle,
   Flag,
   CreditCard,
+  ChevronDown,
 } from "lucide-react";
 import { countries } from "@/lib/countries";
 
@@ -39,11 +39,25 @@ const ProjectCard = ({
   currencySymbol = "₹",
   onDelete,
   onManagePayments,
+  onStatusChange,
 }) => {
-  const amountPaid = project.payments.reduce((acc, p) => acc + p.amount, 0);
-  const amountDue = project.totalAmount - amountPaid;
-  const progress =
-    project.totalAmount > 0 ? (amountPaid / project.totalAmount) * 100 : 0;
+  // --- YAHAN FINAL CHANGES HUE HAIN ---
+  const actualAmountPaid = project.payments.reduce(
+    (acc, p) => acc + p.amount,
+    0
+  );
+  const actualAmountDue = project.totalAmount - actualAmountPaid;
+
+  // Display logic: Agar completed hai to full amount dikhao
+  const displayAmountPaid =
+    project.status === "Completed" ? project.totalAmount : actualAmountPaid;
+  const displayAmountDue = project.status === "Completed" ? 0 : actualAmountDue;
+
+  const paymentProgress =
+    project.totalAmount > 0
+      ? (actualAmountPaid / project.totalAmount) * 100
+      : 0;
+  const progress = project.status === "Completed" ? 100 : paymentProgress;
 
   const priorityColors = {
     High: "bg-red-500/20 text-red-400 border-red-500/30",
@@ -51,64 +65,89 @@ const ProjectCard = ({
     Easy: "bg-green-500/20 text-green-400 border-green-500/30",
   };
 
+  const statusColors = {
+    Ongoing: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+    Completed: "bg-green-500/20 text-green-400 border-green-500/30",
+    Pending: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  };
+
   return (
-    <div className="bg-zinc-800/50 p-4 rounded-lg border border-zinc-700 hover:border-blue-500 transition-all duration-300 group relative">
-      <button
-        onClick={() => onDelete(project._id, "project", project.name)}
-        className="absolute top-2 right-2 p-1 bg-red-600/50 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-opacity"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
-      <div className="flex justify-between items-start">
-        <div>
+    <div className="bg-zinc-800/50 p-4 rounded-lg border border-zinc-700 hover:border-blue-500 transition-all duration-300 group relative flex flex-col justify-between">
+      <div>
+        <div className="flex justify-between items-start">
           <h4 className="font-semibold text-zinc-100">{project.name}</h4>
-          <div className="flex gap-2 mt-1 flex-wrap">
-            <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/30">
-              {project.category}
-            </span>
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full border ${
-                priorityColors[project.priority]
-              }`}
-            >
-              {project.priority}
-            </span>
-          </div>
+          <button
+            onClick={() => onDelete(project._id, "project", project.name)}
+            className="p-1 bg-red-600/50 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-opacity"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
         </div>
-        <div className="text-lg font-bold text-zinc-100">
+        <div className="flex gap-2 mt-1 flex-wrap">
+          <span className="text-xs bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded-full">
+            {project.category}
+          </span>
+          <span
+            className={`text-xs px-2 py-0.5 rounded-full border ${
+              priorityColors[project.priority]
+            }`}
+          >
+            {project.priority}
+          </span>
+        </div>
+        <div className="text-2xl font-bold text-zinc-100 mt-3">
           {currencySymbol}
           {project.totalAmount.toLocaleString()}
         </div>
       </div>
-      <div className="mt-4">
-        <div className="w-full bg-zinc-700 rounded-full h-2">
-          <div
-            className="bg-green-500 h-2 rounded-full"
-            style={{ width: `${progress}%` }}
-          ></div>
+
+      <div>
+        <div className="mt-4">
+          <div className="w-full bg-zinc-700 rounded-full h-2">
+            <div
+              className="bg-green-500 h-2 rounded-full"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          <div className="flex justify-between text-xs text-zinc-400 mt-1.5">
+            <span>
+              Paid: {currencySymbol}
+              {displayAmountPaid.toLocaleString()}
+            </span>
+            <span>
+              Due: {currencySymbol}
+              {displayAmountDue.toLocaleString()}
+            </span>
+          </div>
         </div>
-        <div className="flex justify-between text-xs text-zinc-400 mt-1.5">
-          <span>
-            Paid: {currencySymbol}
-            {amountPaid.toLocaleString()}
-          </span>
-          <span>
-            Due: {currencySymbol}
-            {amountDue.toLocaleString()}
-          </span>
+        <div className="mt-4 pt-3 border-t border-zinc-700/50 flex justify-between items-center">
+          <div className="relative">
+            <select
+              value={project.status}
+              onChange={(e) => onStatusChange(project._id, e.target.value)}
+              className={`text-xs appearance-none font-semibold px-3 pr-7 py-1 rounded-full border cursor-pointer ${
+                statusColors[project.status]
+              }`}
+            >
+              <option value="Pending">Pending</option>
+              <option value="Ongoing">Ongoing</option>
+              <option value="Completed">Completed</option>
+            </select>
+            <ChevronDown className="h-3 w-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+          <button
+            onClick={() => onManagePayments(project)}
+            className="text-xs font-semibold text-blue-400 hover:text-blue-300 py-1 px-2 rounded-md hover:bg-zinc-700/50 transition-colors"
+          >
+            Manage Payments
+          </button>
         </div>
-      </div>
-      <div className="mt-4 pt-3 border-t border-zinc-700/50">
-        <button
-          onClick={() => onManagePayments(project)}
-          className="w-full text-center text-xs font-semibold text-blue-400 hover:text-blue-300 py-1 rounded-md hover:bg-zinc-700/50 transition-colors"
-        >
-          Manage Payments
-        </button>
       </div>
     </div>
   );
 };
+
+// ... (Baaqi ka code neeche same rahega)
 
 const InputField = ({
   Icon,
@@ -315,6 +354,15 @@ export default function WorkspacesPage() {
     }
   };
 
+  const handleStatusChange = async (projectId, status) => {
+    try {
+      await axios.put(`/api/projects/${projectId}`, { status });
+      fetchData(); // Refresh data to show updated status
+    } catch (error) {
+      console.error("Failed to update project status", error);
+    }
+  };
+
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-full">
@@ -389,6 +437,7 @@ export default function WorkspacesPage() {
                       currencySymbol={currencySymbol}
                       onDelete={openDeleteModal}
                       onManagePayments={openPaymentModal}
+                      onStatusChange={handleStatusChange}
                     />
                   ))}
                 </div>

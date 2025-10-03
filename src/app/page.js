@@ -8,15 +8,17 @@ import {
   TrendingUp,
   LoaderCircle,
   ArrowRight,
+  CheckCircle, // Naya icon import kiya hai
 } from "lucide-react";
 import Link from "next/link";
+import { countries } from "@/lib/countries";
 
-// A robust, reusable Stat Card Component
 const StatCard = ({ title, value, icon, color }) => {
   const colors = {
     blue: "bg-blue-600",
     green: "bg-green-600",
     amber: "bg-amber-500",
+    purple: "bg-purple-600", // Naya color add kiya hai
   };
   return (
     <div className="bg-slate-800 p-6 rounded-xl flex items-center border border-slate-700">
@@ -31,48 +33,86 @@ const StatCard = ({ title, value, icon, color }) => {
 
 export default function DashboardPage() {
   const { data: session } = useSession();
+  // --- State ko update kiya gaya hai ---
   const [stats, setStats] = useState({
     totalRevenue: 0,
     pendingAmount: 0,
     ongoingProjects: 0,
+    completedProjects: 0,
   });
   const [recentProjects, setRecentProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // A fallback username if the session email is not available
   const userName = session?.user?.email?.split("@")[0] || "Freelancer";
 
   useEffect(() => {
     const fetchData = async () => {
-      // No need to set isLoading here, it's set initially
       try {
-        // Fetch stats and recent projects in parallel for efficiency
-        const [statsRes, projectsRes] = await Promise.all([
-          axios.get("/api/stats"),
-          axios.get("/api/workspaces"), // Assumes projects are nested in workspaces
+        const [ratesRes, workspacesRes] = await Promise.all([
+          axios.get("https://open.er-api.com/v6/latest/USD"),
+          axios.get("/api/workspaces"),
         ]);
 
-        if (statsRes.data?.data) {
-          setStats(statsRes.data.data);
-        }
+        const rates = ratesRes.data.rates;
+        const workspaces = workspacesRes.data.data || [];
 
-        // Extract, sort, and slice projects safely
-        const allProjects =
-          projectsRes.data?.data?.flatMap((ws) => ws.projects) || [];
+        let totalRevenueUSD = 0;
+        let totalPaidUSD = 0;
+        let ongoingProjectsCount = 0;
+        let completedProjectsCount = 0;
+
+        const allProjects = workspaces.flatMap((ws) =>
+          ws.projects.map((p) => ({ ...p, workspace: ws }))
+        );
+
+        allProjects.forEach((project) => {
+          const currency = project.workspace.currency;
+          const rate = rates[currency] || 1;
+
+          totalRevenueUSD += project.totalAmount / rate;
+
+          const paidForProject = project.payments.reduce(
+            (acc, p) => acc + p.amount,
+            0
+          );
+
+          // Agar project completed hai to poora amount paid maana jaayega
+          if (project.status === "Completed") {
+            totalPaidUSD += project.totalAmount / rate;
+            completedProjectsCount++;
+          } else {
+            totalPaidUSD += paidForProject / rate;
+            if (project.status === "Ongoing") {
+              ongoingProjectsCount++;
+            }
+          }
+        });
+
+        // --- State update mein saari values add ki gayi hain ---
+        setStats({
+          totalRevenue: totalRevenueUSD,
+          pendingAmount: totalRevenueUSD - totalPaidUSD,
+          ongoingProjects: ongoingProjectsCount,
+          completedProjects: completedProjectsCount,
+        });
+
         const sortedProjects = allProjects.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
-        setRecentProjects(sortedProjects.slice(0, 5)); // Get the 5 most recent
+        setRecentProjects(sortedProjects.slice(0, 5));
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
-        // Optionally, set an error state here to show a message to the user
       } finally {
-        // This ensures the loader is always turned off, even if an error occurs
         setIsLoading(false);
       }
     };
     fetchData();
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, []);
+
+  const getCurrencySymbol = (currencyCode) => {
+    const country = countries.find((c) => c.currency === currencyCode);
+    return country ? country.symbol : "$";
+  };
 
   if (isLoading) {
     return (
@@ -85,25 +125,29 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-100">
-          Welcome ARSHAD!
-        </h1>
+        <h1 className="text-3xl font-bold text-slate-100">Welcome ARSHAD!</h1>
         <p className="text-slate-400 mt-1">
           Here&apos;s a summary of your freelance business.
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      {/* --- Stats Grid ko 4 columns ka kar diya gaya hai --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
-          title="Total Revenue (All Time)"
-          value={`$${(stats.totalRevenue || 0).toLocaleString()}`}
+          title="Total Revenue (in USD)"
+          value={`$${(stats.totalRevenue || 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
           icon={<DollarSign className="h-6 w-6 text-white" />}
           color="green"
         />
         <StatCard
-          title="Pending Amount"
-          value={`$${(stats.pendingAmount || 0).toLocaleString()}`}
+          title="Pending Amount (in USD)"
+          value={`$${(stats.pendingAmount || 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
           icon={<TrendingUp className="h-6 w-6 text-white" />}
           color="amber"
         />
@@ -112,6 +156,12 @@ export default function DashboardPage() {
           value={stats.ongoingProjects || 0}
           icon={<Briefcase className="h-6 w-6 text-white" />}
           color="blue"
+        />
+        <StatCard
+          title="Completed Projects"
+          value={stats.completedProjects || 0}
+          icon={<CheckCircle className="h-6 w-6 text-white" />}
+          color="purple"
         />
       </div>
 
@@ -132,12 +182,20 @@ export default function DashboardPage() {
         <div className="divide-y divide-slate-700">
           {recentProjects.length > 0 ? (
             recentProjects.map((project) => {
-              const amountPaid = project.payments.reduce(
+              const actualAmountPaid = project.payments.reduce(
                 (acc, p) => acc + p.amount,
                 0
               );
+              const displayAmountPaid =
+                project.status === "Completed"
+                  ? project.totalAmount
+                  : actualAmountPaid;
+
               const isOverdue =
                 project.deadline && new Date(project.deadline) < new Date();
+              const currencySymbol = getCurrencySymbol(
+                project.workspace.currency
+              );
               return (
                 <div
                   key={project._id}
@@ -151,7 +209,8 @@ export default function DashboardPage() {
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-slate-200">
-                      ${amountPaid.toLocaleString()} / $
+                      {currencySymbol}
+                      {displayAmountPaid.toLocaleString()} / {currencySymbol}
                       {project.totalAmount.toLocaleString()}
                     </p>
                     {project.deadline && (
