@@ -145,12 +145,10 @@ export default function ExpensesPage() {
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
 
-    // Logic for first day of the week (Sunday)
     const firstDayOfWeek = new Date(now);
     firstDayOfWeek.setDate(now.getDate() - now.getDay());
     firstDayOfWeek.setHours(0, 0, 0, 0);
 
-    // Logic for last day of the week (Saturday)
     const lastDayOfWeek = new Date(firstDayOfWeek);
     lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
     lastDayOfWeek.setHours(23, 59, 59, 999);
@@ -181,25 +179,27 @@ export default function ExpensesPage() {
 
   return (
     <div className="text-zinc-100">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Expense Tracker</h1>
+      {/* --- YEH SECTION RESPONSIVE KIYA GAYA HAI --- */}
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:justify-between sm:items-center mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold">Expense Tracker</h1>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors shadow-md"
+          className="flex items-center bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors shadow-md w-full sm:w-auto justify-center"
         >
           <Plus className="h-5 w-5 mr-2" /> New Expense
         </button>
       </div>
 
       <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800">
-        <div className="flex justify-between items-center mb-6">
+        {/* --- YEH SECTION BHI RESPONSIVE KIYA GAYA HAI --- */}
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:justify-between sm:items-center mb-6">
           <div>
             <p className="text-zinc-400">{view} Expenses</p>
             <p className="text-3xl font-bold text-red-400">
               ₹{totalExpense.toLocaleString()}
             </p>
           </div>
-          <div className="flex bg-zinc-800 rounded-lg p-1">
+          <div className="flex flex-wrap bg-zinc-800 rounded-lg p-1">
             <button
               onClick={() => setView("Daily")}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${

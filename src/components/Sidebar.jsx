@@ -3,10 +3,16 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { LayoutDashboard, Briefcase, LogOut, Wallet } from "lucide-react";
+import { LayoutDashboard, Briefcase, LogOut, Wallet, X } from "lucide-react"; // X icon import karein
 
-const Sidebar = () => {
+const Sidebar = ({ closeSidebar }) => {
   const pathname = usePathname();
+
+  const handleLinkClick = () => {
+    if (closeSidebar) {
+      closeSidebar();
+    }
+  };
 
   const navLinkClasses = (path) =>
     `flex items-center px-3 py-2 text-zinc-400 transition-colors duration-200 transform rounded-lg hover:bg-zinc-700 hover:text-zinc-100 ${
@@ -14,23 +20,38 @@ const Sidebar = () => {
     }`;
 
   return (
-    <div className="w-64 bg-zinc-900 border-r border-zinc-800 min-h-screen flex flex-col justify-between">
+    <div className="w-64 bg-zinc-900 border-r border-zinc-800 h-full flex flex-col justify-between">
       <div>
-        <div className="p-4 flex items-center justify-center border-b border-zinc-800 h-16">
+        <div className="p-4 flex items-center justify-between border-b border-zinc-800 h-16">
           <h1 className="text-xl font-bold text-zinc-100 ml-2">
             My Management
           </h1>
+          <button className="md:hidden text-zinc-400" onClick={closeSidebar}>
+            <X className="h-6 w-6" />
+          </button>
         </div>
         <nav className="mt-4 px-3">
-          <Link href="/" className={navLinkClasses("/")}>
+          <Link
+            href="/"
+            className={navLinkClasses("/")}
+            onClick={handleLinkClick}
+          >
             <LayoutDashboard className="h-5 w-5 mr-3" />
             Dashboard
           </Link>
-          <Link href="/workspaces" className={navLinkClasses("/workspaces")}>
+          <Link
+            href="/workspaces"
+            className={navLinkClasses("/workspaces")}
+            onClick={handleLinkClick}
+          >
             <Briefcase className="h-5 w-5 mr-3" />
             Workspaces
           </Link>
-          <Link href="/expenses" className={navLinkClasses("/expenses")}>
+          <Link
+            href="/expenses"
+            className={navLinkClasses("/expenses")}
+            onClick={handleLinkClick}
+          >
             <Wallet className="h-5 w-5 mr-3" />
             Expenses
           </Link>
